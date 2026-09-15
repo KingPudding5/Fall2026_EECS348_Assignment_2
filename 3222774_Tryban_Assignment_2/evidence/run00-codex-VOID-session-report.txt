@@ -1,0 +1,55 @@
+========================================================================
+SESSION REPORT  --  rollout-2026-09-14T18-34-19-01a0a245-8407-7c80-924e-ef1ef2b05077.jsonl
+========================================================================
+SYSTEM        Codex CLI
+  model       gpt-5.6-sol   (reasoning effort: xhigh)
+  cli version 0.153.4   originator: Codex Desktop  source: vscode
+  provider    openai
+  cwd         /Users/francistryban/AgenticArea/Assignment1/Ass1Codex
+  sandbox     danger-full-access   approval policy: never
+
+WALL CLOCK    3m 35s (215 s)
+  start       2026-09-14T23:34:33.749000+00:00
+  end         2026-09-14T23:38:09.555000+00:00
+
+TOKENS (provider-reported, whole session)
+  input               209,084
+    of which cached   191,744
+  output                8,355
+    of which reason     3,068
+  TOTAL               217,439
+  fresh (uncached)     25,695   <- the honest 'work' figure
+
+ACTIONS       6 tool call(s)
+
+  1. [2026-09-14T23:34:42.075Z] exec
+       const r = await tools.exec_command({cmd:"pwd && sed -n '1,240p' AGENT.md && sed -n '1,260p' PROMPT.m ...
+
+  2. [2026-09-14T23:35:16.986Z] exec
+       const r = await tools.exec_command({cmd:"if [ -e 'iterations/00-raw.c' ]; then sed -n '1,260p' 'iter ...
+
+  3. [2026-09-14T23:36:21.686Z] exec
+       const patch = "*** Begin Patch\n*** Delete File: /Users/francistryban/AgenticArea/Assignment1/Ass1Co ...
+       >> COMPILE/EXECUTE detected
+
+  4. [2026-09-14T23:36:30.376Z] exec
+       text(await tools.apply_patch("*** Begin Patch\n*** Delete File: /Users/francistryban/AgenticArea/Ass ...
+
+  5. [2026-09-14T23:37:19.588Z] exec
+       const patch = "*** Begin Patch\n*** Add File: /Users/francistryban/AgenticArea/Assignment1/Ass1Codex ...
+       >> COMPILE/EXECUTE detected
+
+  6. [2026-09-14T23:37:43.186Z] exec
+       const r = await tools.exec_command({cmd:"gcc -Wall -Wextra -O2 'iterations/00-raw.c' -o /dev/null && ...
+       >> COMPILE/EXECUTE detected
+
+------------------------------------------------------------------------
+FILE PATHS TOUCHED
+  /Users/francistryban/AgenticArea/Assignment1/Ass1Codex
+  /Users/francistryban/AgenticArea/Assignment1/Ass1Codex/iterations/00-raw.c
+
+SANDBOX CHECK  expected folder: /Users/francistryban/AgenticArea/Fall2026_EECS348_Assignment_2/3222774_Tryban_Assignment_2/Codex
+  *** PATHS OUTSIDE THE EXPECTED FOLDER ***
+    ! /Users/francistryban/AgenticArea/Assignment1/Ass1Codex
+    ! /Users/francistryban/AgenticArea/Assignment1/Ass1Codex/iterations/00-raw.c
+------------------------------------------------------------------------

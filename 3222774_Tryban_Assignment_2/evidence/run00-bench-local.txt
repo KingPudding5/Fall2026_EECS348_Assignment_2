@@ -1,0 +1,504 @@
+
+=== ENVIRONMENT ===
+x86_64
+gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+ldd (Ubuntu GLIBC 2.39-0ubuntu8.7) 2.39
+Tue Sep 15 01:22:14 UTC 2026
+
+=== COMPILE: gcc <course command, no flags> ===
+--- claude.c ---
+exit=0
+--- codex.c ---
+exit=0
+
+=== COMPILE: gcc -Wall -Wextra ===
+--- claude.c ---
+exit=0
+--- codex.c ---
+exit=0
+
+=== COMPILE: gcc -O2 ===
+--- claude.c ---
+exit=0
+--- codex.c ---
+exit=0
+
+=== COMPILE: gcc -Wall -Wextra -O2 ===
+--- claude.c ---
+exit=0
+--- codex.c ---
+exit=0
+
+=== COMPILE: gcc -std=c89 -pedantic ===
+--- claude.c ---
+exit=0
+--- codex.c ---
+codex.c: In function 'main':
+codex.c:283:20: warning: ISO C90 does not support the 'z' gnu_printf length modifier [-Wformat=]
+  283 |             printf("There are %zu emails to read.\n", heap.size);
+      |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+exit=0
+
+=== COMPILE: gcc -std=c99 -pedantic ===
+--- claude.c ---
+exit=0
+--- codex.c ---
+exit=0
+
+=== SPEC SAMPLE: byte-exact, both input paths ===
+  claude (arg): BYTE-IDENTICAL
+  claude (stdin): BYTE-IDENTICAL
+  codex (arg): BYTE-IDENTICAL
+  codex (stdin): BYTE-IDENTICAL
+
+=== BEHAVIOR: paths the spec mentions but does not illustrate ===
+
+######## claude ########
+--- NEXT on empty inbox ---
+No emails to read.
+[exit=0]
+--- READ on empty inbox ---
+[exit=0]
+--- COUNT on empty inbox ---
+There are 0 emails to read.
+[exit=0]
+--- COUNT with exactly one ---
+There are 1 emails to read.
+[exit=0]
+--- two NEXTs, no READ between ---
+Next email:
+Sender: Boss
+Subject: A
+Date: 01-01-2025
+Next email:
+Sender: Boss
+Subject: A
+Date: 01-01-2025
+[exit=0]
+--- two READs, no NEXT between ---
+There are 0 emails to read.
+[exit=0]
+--- tie ---
+Next email:
+Sender: Boss
+Subject: SECOND
+Date: 01-01-2025
+[exit=0]
+--- all five categories, same date ---
+Next email:
+Sender: Boss
+Subject: A
+Date: 01-01-2025
+Next email:
+Sender: Subordinate
+Subject: B
+Date: 01-01-2025
+Next email:
+Sender: Peer
+Subject: C
+Date: 01-01-2025
+Next email:
+Sender: ImportantPerson
+Subject: D
+Date: 01-01-2025
+Next email:
+Sender: OtherPerson
+Subject: E
+Date: 01-01-2025
+[exit=0]
+--- date ordering crosses a year ---
+Next email:
+Sender: Boss
+Subject: NEW
+Date: 01-03-2025
+[exit=0]
+--- unknown sender category ---
+There are 1 emails to read.
+Next email:
+Sender: Alien
+Subject: Hello
+Date: 01-01-2025
+[exit=0]
+--- malformed EMAIL line ---
+There are 0 emails to read.
+[exit=0]
+--- blank lines in the file ---
+There are 1 emails to read.
+[exit=0]
+--- subject containing spaces ---
+Next email:
+Sender: Boss
+Subject: A subject with many spaces
+Date: 01-01-2025
+[exit=0]
+--- empty file ---
+[exit=0]
+
+######## codex ########
+--- NEXT on empty inbox ---
+[exit=0]
+--- READ on empty inbox ---
+[exit=0]
+--- COUNT on empty inbox ---
+There are 0 emails to read.
+[exit=0]
+--- COUNT with exactly one ---
+There are 1 emails to read.
+[exit=0]
+--- two NEXTs, no READ between ---
+Next email:
+Sender: Boss
+Subject: A
+Date: 01-01-2025
+Next email:
+Sender: Boss
+Subject: A
+Date: 01-01-2025
+[exit=0]
+--- two READs, no NEXT between ---
+There are 0 emails to read.
+[exit=0]
+--- tie ---
+Next email:
+Sender: Boss
+Subject: SECOND
+Date: 01-01-2025
+[exit=0]
+--- all five categories, same date ---
+Next email:
+Sender: Boss
+Subject: A
+Date: 01-01-2025
+Next email:
+Sender: Subordinate
+Subject: B
+Date: 01-01-2025
+Next email:
+Sender: Peer
+Subject: C
+Date: 01-01-2025
+Next email:
+Sender: ImportantPerson
+Subject: D
+Date: 01-01-2025
+Next email:
+Sender: OtherPerson
+Subject: E
+Date: 01-01-2025
+[exit=0]
+--- date ordering crosses a year ---
+Next email:
+Sender: Boss
+Subject: NEW
+Date: 01-03-2025
+[exit=0]
+--- unknown sender category ---
+There are 1 emails to read.
+Next email:
+Sender: Alien
+Subject: Hello
+Date: 01-01-2025
+[exit=0]
+--- malformed EMAIL line ---
+There are 0 emails to read.
+[exit=0]
+--- blank lines in the file ---
+There are 1 emails to read.
+[exit=0]
+--- subject containing spaces ---
+Next email:
+Sender: Boss
+Subject: A subject with many spaces
+Date: 01-01-2025
+[exit=0]
+--- empty file ---
+[exit=0]
+
+=== BEHAVIOR: command line ===
+  claude extra args -> There are 0 emails to read.
+    [exit=0]
+  claude missing file -> Error: could not open file 'no_such_file.txt'
+    [exit=0]
+  codex extra args -> Usage: ./codex [input_file]
+    [exit=0]
+  codex missing file -> Unable to open input file: no_such_file.txt
+    [exit=0]
+
+=== HEAP ORDER ORACLE (500 emails, no ties) ===
+  claude: order CORRECT for all 500
+  codex: order CORRECT for all 500
+
+=== DATE-KEY OVERFLOW PROBE ===
+  claude   -O0 -> Subject: FAR_FUTURE
+  codex    -O0 -> Subject: NORMAL_2025
+  claude   -O2 -> Subject: FAR_FUTURE
+  codex    -O2 -> Subject: NORMAL_2025
+  (correct answer is FAR_FUTURE: year 429497 is newer than 2025)
+  --- claude.c under the signed-overflow sanitizer ---
+  --- codex.c under the signed-overflow sanitizer ---
+     codex.c:64:17: runtime error: signed integer overflow: 429497 * 10000 cannot be represented in type 'int'
+
+=== EXECUTION TIME: scaling, user CPU, best of 3 ===
+  N emails  claude     codex     
+  5000      0.0s       0.005s    
+  50000     0.039s     0.041s    
+  500000    0.687s     0.672s    
+
+=== SPACE: stack frame per function ===
+  --- claude ---
+     claude.c:282:13:handleEmail    208 bytes
+     claude.c:360:5:main            80 bytes
+     claude.c:220:14:readLine       80 bytes
+     23 functions, 1152 bytes total
+  --- codex ---
+     codex.c:221:13:add_email_command 176 bytes
+     codex.c:248:5:main             96 bytes
+     codex.c:92:13:heap_insert      80 bytes
+     15 functions, 824 bytes total
+
+=== SPACE: sizeof(Email) and growth policy ===
+  --- claude ---
+     sizeof(Email) = 48 bytes
+     initial capacity: capacity == 0) ? 16
+  --- codex ---
+     sizeof(Email) = 40 bytes
+     initial capacity: capacity == 0 ? 8
+
+=== SPACE: peak heap and leaks (valgrind; skipped if unavailable) ===
+  --- claude ---
+     ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+     peak heap (10,000 emails): 1364167 bytes
+  --- codex ---
+     ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+     peak heap (10,000 emails): 1223988 bytes
+
+=== MAINTAINABILITY: size, structure, comment density ===
+  file          lines  comment    funcs   cmt/fn
+  claude          382       53       23      2.3
+  codex           293        4       14      0.3
+
+=== MAINTAINABILITY: rubric prolog items present in the first 25 lines ===
+  --- claude.c ---
+     program name           MISSING
+     brief description      MISSING
+     inputs                 present
+     outputs                MISSING
+     author full name       MISSING
+     creation date          present
+     revision date          MISSING
+     collaborators          MISSING
+     other sources / GenAI  MISSING
+  --- codex.c ---
+     program name           MISSING
+     brief description      MISSING
+     inputs                 MISSING
+     outputs                MISSING
+     author full name       MISSING
+     creation date          MISSING
+     revision date          MISSING
+     collaborators          MISSING
+     other sources / GenAI  MISSING
+
+=== SOURCE DIFF ===
+--- claude.c	2026-09-15 01:17:47.920094304 +0000
++++ codex.c	2026-09-15 01:17:47.920912982 +0000
+@@ -1,382 +1,293 @@
+-/*
+- * CEO Email Prioritizer
+- *
+- * Reads commands (EMAIL, NEXT, READ, COUNT) from a file given as the first
+- * command-line argument, or from standard input if no argument is given.
+- *
+- * Emails are stored in a MaxHeap implemented from scratch on top of a
+- * dynamically growing array (list-based heap). The heap acts as a priority
+- * queue ordered by:
+- *   1. Sender category: Boss > Subordinate > Peer > ImportantPerson > OtherPerson
+- *   2. Date: newer emails before older emails
+- *   3. Arrival order: for identical category and date, the later-arriving
+- *      email is treated as newer
+- */
+-
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+-#include <ctype.h>
+-
+-/* ------------------------------------------------------------------------- */
+-/* Email record                                                              */
+-/* ------------------------------------------------------------------------- */
+ 
+ typedef struct {
+-    char *sender;       /* sender category text, e.g. "Boss" */
+-    char *subject;      /* subject line (may contain spaces) */
+-    char *date;         /* date text as given, MM-DD-YYYY */
+-    int   priority;     /* numeric rank of sender category, higher = sooner */
+-    long  dateKey;      /* YYYYMMDD, so larger means newer */
+-    unsigned long seq;  /* arrival order, used as a final tie-breaker */
++    char *sender;
++    char *subject;
++    char *date;
++    int sender_priority;
++    int date_value;
++    unsigned long insertion_order;
+ } Email;
+ 
+-static char *dupString(const char *s)
++typedef struct {
++    Email *items;
++    size_t size;
++    size_t capacity;
++} MaxHeap;
++
++static void allocation_error(void)
++{
++    fprintf(stderr, "Unable to allocate memory.\n");
++    exit(EXIT_FAILURE);
++}
++
++static char *copy_string(const char *text)
+ {
+-    size_t len = strlen(s);
+-    char *copy = malloc(len + 1);
++    size_t length = strlen(text) + 1;
++    char *copy = malloc(length);
++
+     if (copy == NULL) {
+-        fprintf(stderr, "Error: out of memory\n");
+-        exit(1);
++        allocation_error();
+     }
+-    memcpy(copy, s, len + 1);
++    memcpy(copy, text, length);
+     return copy;
+ }
+ 
+-static void freeEmail(Email *e)
++static int category_priority(const char *sender)
+ {
+-    free(e->sender);
+-    free(e->subject);
+-    free(e->date);
+-    e->sender = NULL;
+-    e->subject = NULL;
+-    e->date = NULL;
+-}
+-
+-/* Map a sender category to its priority. Unknown categories rank lowest. */
+-static int categoryPriority(const char *category)
+-{
+-    if (strcmp(category, "Boss") == 0)            return 5;
+-    if (strcmp(category, "Subordinate") == 0)     return 4;
+-    if (strcmp(category, "Peer") == 0)            return 3;
+-    if (strcmp(category, "ImportantPerson") == 0) return 2;
+-    if (strcmp(category, "OtherPerson") == 0)     return 1;
+-    return 0;
++    if (strcmp(sender, "Boss") == 0) {
++        return 5;
++    }
++    if (strcmp(sender, "Subordinate") == 0) {
++        return 4;
++    }
++    if (strcmp(sender, "Peer") == 0) {
++        return 3;
++    }
++    if (strcmp(sender, "ImportantPerson") == 0) {
++        return 2;
++    }
++    return 1;
+ }
+ 
+-/* Convert MM-DD-YYYY into a sortable YYYYMMDD number. Returns 0 if malformed. */
+-static long dateToKey(const char *date)
++static int date_priority(const char *date)
+ {
+-    int month, day, year;
++    int month;
++    int day;
++    int year;
++
+     if (sscanf(date, "%d-%d-%d", &month, &day, &year) != 3) {
+         return 0;
+     }
+-    return (long)year * 10000L + (long)month * 100L + (long)day;
++    return year * 10000 + month * 100 + day;
+ }
+ 
+-/* Returns nonzero if email a should be read before email b. */
+-static int higherPriority(const Email *a, const Email *b)
++static int is_higher_priority(const Email *left, const Email *right)
+ {
+-    if (a->priority != b->priority) {
+-        return a->priority > b->priority;
++    if (left->sender_priority != right->sender_priority) {
++        return left->sender_priority > right->sender_priority;
+     }
+-    if (a->dateKey != b->dateKey) {
+-        return a->dateKey > b->dateKey;
++    if (left->date_value != right->date_value) {
++        return left->date_value > right->date_value;
+     }
+-    return a->seq > b->seq;
++    return left->insertion_order < right->insertion_order;
+ }
+ 
+-/* ------------------------------------------------------------------------- */
+-/* MaxHeap (list-based)                                                      */
+-/* ------------------------------------------------------------------------- */
+-
+-typedef struct {
+-    Email *items;       /* array storage; children of i are 2i+1 and 2i+2 */
+-    size_t size;
+-    size_t capacity;
+-} MaxHeap;
+-
+-static void heapInit(MaxHeap *heap)
++static void swap_emails(Email *left, Email *right)
+ {
+-    heap->items = NULL;
+-    heap->size = 0;
+-    heap->capacity = 0;
++    Email temporary = *left;
++    *left = *right;
++    *right = temporary;
+ }
+ 
+-static void heapFree(MaxHeap *heap)
++static void heap_init(MaxHeap *heap)
+ {
+-    size_t i;
+-    for (i = 0; i < heap->size; i++) {
+-        freeEmail(&heap->items[i]);
+-    }
+-    free(heap->items);
+     heap->items = NULL;
+     heap->size = 0;
+     heap->capacity = 0;
+ }
+ 
+-static size_t heapSize(const MaxHeap *heap)
++static void heap_insert(MaxHeap *heap, Email email)
+ {
+-    return heap->size;
+-}
++    size_t index;
+ 
+-static int heapIsEmpty(const MaxHeap *heap)
+-{
+-    return heap->size == 0;
+-}
++    if (heap->size == heap->capacity) {
++        size_t new_capacity = heap->capacity == 0 ? 8 : heap->capacity * 2;
++        Email *new_items = realloc(heap->items, new_capacity * sizeof(*new_items));
+ 
+-static void swapEmails(Email *a, Email *b)
+-{
+-    Email tmp = *a;
+-    *a = *b;
+-    *b = tmp;
+-}
++        if (new_items == NULL) {
++            allocation_error();
++        }
++        heap->items = new_items;
+
+=== done ===
